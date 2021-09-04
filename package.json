@@ -4,11 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "node front-end/tutorial-canciones/server.js",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "build": "ng build --prefix front-end/tutorial-canciones",
+    "watch": "ng build --prefix front-end/tutorial-canciones --watch --configuration development",
     "test": "ng test",
     "preinstall": "npm install -g @angular/cli @angular/compiler-cli typescript",
-    "postinstall": "ng build --prod"
+    "postinstall": "ng build --prefix front-end/tutorial-canciones --prod"
   },
   "engines": {
     "node": "12.14",
