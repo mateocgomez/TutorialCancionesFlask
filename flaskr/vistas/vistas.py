@@ -2,6 +2,7 @@ from flask import request
 from ..modelos import db, Cancion, CancionSchema, Usuario, UsuarioSchema, Album, AlbumSchema
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 
 cancion_schema = CancionSchema()
 usuario_schema = UsuarioSchema()
@@ -39,16 +40,10 @@ class VistaCancion(Resource):
         db.session.commit()
         return '',204
 
-class VistaLogIn(Resource):
-    def post(self):
-            u_nombre = request.json["nombre"]
-            u_contrasena = request.json["contrasena"]
-            usuario = Usuario.query.filter_by(nombre=u_nombre, contrasena = u_contrasena).all()
-            if usuario:
-                return {'mensaje':'Inicio de sesión exitoso'}, 200
-            else:
-                return {'mensaje':'Nombre de usuario o contraseña incorrectos'}, 401
-
+class VistaAlbumesCanciones(Resource):
+    def get(self, id_cancion):
+        cancion = Cancion.query.get_or_404(id_cancion)
+        return [album_schema.dump(al) for al in cancion.albumes]
 
 class VistaSignIn(Resource):
     
@@ -56,7 +51,9 @@ class VistaSignIn(Resource):
         nuevo_usuario = Usuario(nombre=request.json["nombre"], contrasena=request.json["contrasena"])
         db.session.add(nuevo_usuario)
         db.session.commit()
-        return 'Usuario creado exitosamente', 201
+        token_de_acceso = create_access_token(identity = nuevo_usuario.id)
+        return {"mensaje":"usuario creado exitosamente", "token":token_de_acceso}
+
 
     def put(self, id_usuario):
         usuario = Usuario.query.get_or_404(id_usuario)
@@ -70,8 +67,20 @@ class VistaSignIn(Resource):
         db.session.commit()
         return '',204
 
+class VistaLogIn(Resource):
+
+    def post(self):
+        usuario = Usuario.query.filter(Usuario.nombre == request.json["nombre"], Usuario.contrasena == request.json["contrasena"]).first()
+        db.session.commit()
+        if usuario is None:
+            return "El usuario no existe", 404
+        else:
+            token_de_acceso = create_access_token(identity = usuario.id)
+            return {"mensaje":"Inicio de sesión exitoso", "token": token_de_acceso}
+
 class VistaAlbumsUsuario(Resource):
 
+    @jwt_required()
     def post(self, id_usuario):
         nuevo_album = Album(titulo=request.json["titulo"], anio=request.json["anio"], descripcion=request.json["descripcion"], medio=request.json["medio"])
         usuario = Usuario.query.get_or_404(id_usuario)
@@ -85,6 +94,7 @@ class VistaAlbumsUsuario(Resource):
 
         return album_schema.dump(nuevo_album)
 
+    @jwt_required()
     def get(self, id_usuario):
         usuario = Usuario.query.get_or_404(id_usuario)
         return [album_schema.dump(al) for al in usuario.albumes]

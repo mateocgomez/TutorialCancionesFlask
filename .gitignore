@@ -1,3 +1,6 @@
+# Virtual enviroment
+/flaskr/tutorialescanciones
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -142,6 +145,3 @@ cython_debug/
 
 #DataBase
 test.db
-
-#Node
-node_modules/
