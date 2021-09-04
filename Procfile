@@ -1,1 +1,1 @@
-web: node /front-end/tutorial-canciones/server.js
+web: node ./front-end/tutorial-canciones/server.js
