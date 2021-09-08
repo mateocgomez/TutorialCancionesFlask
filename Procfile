@@ -1,1 +1,2 @@
-web: node front-end/tutorial-canciones/server.js
+web: gunicorn flaskr.app:app
+web: node server.js
